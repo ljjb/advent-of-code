@@ -15,3 +15,9 @@
  (name day03)
  (modules day03)
  (libraries advent2022))
+
+(executable
+ (public_name day04)
+ (name day04)
+ (modules day04)
+ (libraries advent2022))

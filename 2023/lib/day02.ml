@@ -1,14 +1,6 @@
 open Core
 open Stdio
 
-let read_puzzle ic =
-  let f ic =
-    match In_channel.input_line ic with
-    | Some line -> Some (line, ic)
-    | None -> None
-  in
-  Sequence.unfold ~init:ic ~f
-
 module Outcome = struct
   type t = { red : int; green : int; blue : int } [@@deriving sexp]
 
@@ -40,47 +32,35 @@ module Outcome = struct
 end
 
 module Parse = struct
-  module A = Angstrom
+  open Angstrom
 
-  let game_number =
-    A.(string "Game " *> A.take_while Char.is_digit *> string ": ")
+  let game_number = string "Game " *> take_while Char.is_digit *> string ": "
 
   let number =
-    let open A in
     let* digits = take_while Char.is_digit in
     return @@ Int.of_string digits
 
-  let many_space = A.(many @@ char ' ')
+  let many_space = many @@ char ' '
 
   let red =
-    let open A in
     many_space *> number <* string " red" <* many_space >>| fun i -> `Red i
 
   let green =
-    let open A in
     many_space *> number <* string " green" <* many_space >>| fun i -> `Green i
 
   let blue =
-    let open A in
     many_space *> number <* string " blue" <* many_space >>| fun i -> `Blue i
 
-  let color = A.(choice [ red; green; blue ])
+  let color = choice [ red; green; blue ]
+  let outcome = sep_by (char ',') color >>| fun xs -> Outcome.of_list xs
+  let outcomes = sep_by (char ';') outcome
+  let game = game_number *> outcomes
 
-  let outcome =
-    let open A in
-    sep_by (char ',') color >>| fun xs -> Outcome.of_list xs
-
-  let outcomes =
-    let open A in
-    sep_by (char ';') outcome
-
-  let game = A.(game_number *> outcomes)
+  let game_of_string line =
+    match parse_string ~consume:Consume.All game line with
+    | Ok game -> game
+    | _ -> failwith "Invalid input"
 end
-
-let game_of_string line =
-  match Angstrom.parse_string ~consume:Angstrom.Consume.All Parse.game line with
-  | Ok game -> game
-  | _ -> failwith "Invalid input"
 
 let possible_given_outcomes total outcomes =
   let pred outcome =
@@ -96,28 +76,27 @@ let power outcomes =
   in
   Outcome.power minimum_cubes
 
-let id x = x
+let solve part filename =
+  let filter_map =
+    match part with
+    | `One ->
+        let bag = Outcome.{ red = 12; green = 13; blue = 14 } in
+        Sequence.filter_mapi ~f:(fun i x ->
+            match possible_given_outcomes bag x with
+            | true -> Some (i + 1)
+            | false -> None)
+    | `Two -> Sequence.map ~f:power
+  in
+  let f ic =
+    let puzzle =
+      Util.read_lines ic
+      |> Sequence.map ~f:Parse.game_of_string
+      |> filter_map
+      |> Sequence.sum (module Int) ~f:Util.id
+    in
+    sprintf !"%{sexp:(Int.t)}" puzzle
+  in
+  In_channel.with_file filename ~f
 
-let part1 filename =
-  let gold = Outcome.{ red = 12; green = 13; blue = 14 } in
-  In_channel.with_file filename ~f:(fun ic ->
-      let puzzle =
-        read_puzzle ic
-        |> Sequence.map ~f:game_of_string
-        |> Sequence.filter_mapi ~f:(fun i x ->
-               match possible_given_outcomes gold x with
-               | true -> Some (i + 1)
-               | false -> None)
-        |> Sequence.sum (module Int) ~f:id
-      in
-      sprintf !"%{sexp:(Int.t)}" puzzle)
-
-let part2 filename =
-  In_channel.with_file filename ~f:(fun ic ->
-      let puzzle =
-        read_puzzle ic
-        |> Sequence.map ~f:game_of_string
-        |> Sequence.map ~f:power
-        |> Sequence.sum (module Int) ~f:id
-      in
-      sprintf !"%{sexp:(Int.t)}" puzzle)
+let part1 = solve `One
+let part2 = solve `Two

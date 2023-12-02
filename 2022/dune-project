@@ -1,0 +1,26 @@
+(lang dune 3.10)
+
+(name advent2022)
+
+(generate_opam_files true)
+
+(source
+ (github ljjb/advent-of-code))
+
+(authors "ljjb")
+
+(maintainers "ljjb")
+
+(license LICENSE)
+
+(documentation https://github.com/ljjb/advent-of-code)
+
+(package
+ (name advent2022)
+ (synopsis "Advent of Code 2022")
+ (description "Advent!")
+ (depends ocaml dune)
+ (tags
+  (advent aoc)))
+
+; See the complete stanza docs at https://dune.readthedocs.io/en/stable/dune-files.html#dune-project

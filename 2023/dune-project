@@ -1,6 +1,6 @@
 (lang dune 3.11)
 
-(name day01)
+(name advent2023)
 
 (generate_opam_files false)
 

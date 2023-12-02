@@ -1,6 +1,0 @@
-(executable
- (public_name day01)
- (name main)
- (libraries day01 core stdio)
- (preprocess
-  (pps ppx_jane ppx_sexp_conv)))

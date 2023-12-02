@@ -1,4 +1,7 @@
+(include_subdirs qualified)
+
 (library
  (name advent2022)
  (libraries core stdio angstrom)
- (preprocess (pps ppx_jane ppx_sexp_conv ppx_inline_test)))
+ (preprocess
+  (pps ppx_jane ppx_sexp_conv ppx_inline_test)))

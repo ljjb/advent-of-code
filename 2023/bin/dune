@@ -9,3 +9,9 @@
  (name day02)
  (modules day02)
  (libraries advent2023 core stdio))
+
+(executable
+ (public_name day03)
+ (name day03)
+ (modules day03)
+ (libraries advent2023 core stdio))

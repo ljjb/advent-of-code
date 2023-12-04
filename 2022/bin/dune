@@ -63,3 +63,15 @@
  (name day11)
  (modules day11)
  (libraries advent2022))
+
+(executable
+ (public_name day12)
+ (name day12)
+ (modules day12)
+ (libraries advent2022))
+
+(executable
+ (public_name day13)
+ (name day13)
+ (modules day13)
+ (libraries advent2022))

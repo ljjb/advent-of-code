@@ -14,7 +14,7 @@ module Card = struct
     |> List.length
   ;;
 
-  let won_shallow t =
+  let shallow_num_won t =
     let n = num_matching t in
     List.init n ~f:(fun x -> t.idx + x + 1)
   ;;
@@ -28,16 +28,11 @@ module Parse = struct
   let numbers = many_space *> sep_by many_space integer <* many_space
   let card_label = string_ci "Card" *> many_space *> integer <* char ':'
 
-  let left_and_right =
-    let* left = numbers in
-    let* _ = char '|' in
-    let* right = numbers in
-    return (left, right)
-  ;;
-
   let card =
     let* idx = card_label in
-    let* winners, received = left_and_right in
+    let* winners = numbers in
+    let* _ = char '|' in
+    let* received = numbers in
     return Card.{ idx; winners; received }
   ;;
 
@@ -72,19 +67,17 @@ let part2 filename =
     cards
     |> List.iter ~f:(fun card ->
       Hashtbl.update card_wins card.idx ~f:(function
-        | None -> Card.won_shallow card
+        | None -> Card.shallow_num_won card
         | Some matching -> matching));
     let rec won_by idx =
-      match Hashtbl.find_exn card_wins idx with
-      | [] -> 0
-      | many ->
-        let n = List.length many in
-        List.fold many ~init:n ~f:(fun acc x ->
-          (* printf !"updating %{sexp:(int)}\n" x; *)
-          Hashtbl.update deep_card_wins x ~f:(function
-            | None -> won_by x
-            | Some num -> num);
-          acc + Hashtbl.find_exn deep_card_wins x)
+      Hashtbl.update_and_return deep_card_wins idx ~f:(function
+        | Some num -> num
+        | None ->
+          (match Hashtbl.find_exn card_wins idx with
+           | [] -> 0
+           | many ->
+             let n = List.length many in
+             List.fold many ~init:n ~f:(fun acc idx -> acc + won_by idx)))
     in
     List.fold cards ~init:(List.length cards) ~f:(fun acc card -> acc + won_by card.idx)
     |> sprintf !"%{sexp:(Int.t)}"

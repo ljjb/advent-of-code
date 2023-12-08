@@ -39,8 +39,6 @@ module Parse = struct
 end
 
 let parse_puzzle = Parse.(parse_general puzzle)
-let parse_node = Parse.(parse_general node)
-let parse_destinations = Parse.(parse_general destinations)
 
 module Stringtbl = Hashtbl.Make (String)
 
@@ -127,11 +125,12 @@ let part2 filename =
   let directions, nodes = In_channel.read_all filename |> parse_puzzle in
   let graph = Graph.of_tuple_nodes nodes in
   let starts = Graph.starts graph in
-  let z_seqs = List.map starts ~f:(Graph.z_seq graph ~directions) |> Array.of_list in
-  let z_seqs_and_vals =
-    Array.map z_seqs ~f:(fun seq -> Sequence.next seq |> Option.value_exn)
+  let z_vals, z_seqs =
+    List.map starts ~f:(fun start ->
+      Graph.z_seq graph start ~directions |> Sequence.next |> Option.value_exn)
+    |> Array.of_list
+    |> Array.unzip
   in
-  let z_vals, z_seqs = Array.unzip z_seqs_and_vals in
   let rec loop () =
     let i = Int.(argmin z_vals ~compare) in
     let next_val, next_seq = Sequence.next z_seqs.(i) |> Option.value_exn in

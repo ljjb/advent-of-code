@@ -22,19 +22,19 @@ end
 
 let%expect_test "times" =
   let input = "Time:      7  15   30" in
-  Parse.parse_times input |> printf !"%{sexp:(int List.t)}";
+  Parse.parse_times input |> printf !"%{sexp:(int list)}";
   [%expect "(7 15 30)"]
 ;;
 
 let%expect_test "distances" =
   let input = "Distance:      9  40  200" in
-  Parse.parse_distances input |> printf !"%{sexp:(int List.t)}";
+  Parse.parse_distances input |> printf !"%{sexp:(int list)}";
   [%expect "(9 40 200)"]
 ;;
 
 let%expect_test "puzzle" =
   let input = "Time:      7  15   30\nDistance:      9  40  200\n" in
-  Parse.parse input |> printf !"%{sexp:((int * int) List.t)}";
+  Parse.parse input |> printf !"%{sexp:((int * int) list)}";
   [%expect "((7 9) (15 40) (30 200))"]
 ;;
 

@@ -79,7 +79,7 @@ let solve part filename =
       |> filter_map
       |> Sequence.sum (module Int) ~f:Util.id
     in
-    sprintf !"%{sexp:(Int.t)}" puzzle
+    sprintf !"%{sexp:(int)}" puzzle
   in
   In_channel.with_file filename ~f
 ;;

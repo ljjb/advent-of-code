@@ -64,19 +64,19 @@ end
 
 let%expect_test "hand" =
   let hand = "J3T3T" |> Parse.parse_hand in
-  printf !"%{sexp:(Card.t List.t)}" hand;
+  printf !"%{sexp:(Card.t list)}" hand;
   [%expect "(Three Three Tercio Tercio Jack)"]
 ;;
 
 let%expect_test "hand" =
   let hand_bid = "J3T3T 868" |> Parse.parse_hand_bid in
-  printf !"%{sexp:(Card.t List.t * int)}" hand_bid;
+  printf !"%{sexp:(Card.t list * int)}" hand_bid;
   [%expect "((Three Three Tercio Tercio Jack) 868)"]
 ;;
 
 let%expect_test "hand" =
   let puzzle = "J3T3T 868\n6Q499 630" |> Parse.parse in
-  printf !"%{sexp:((Card.t List.t * int) List.t)}" puzzle;
+  printf !"%{sexp:((Card.t list * int) list)}" puzzle;
   [%expect "(((Three Three Tercio Tercio Jack) 868) ((Four Six Nine Nine Queen) 630))"]
 ;;
 

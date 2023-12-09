@@ -73,7 +73,7 @@ let part2 filename =
              List.fold many ~init:n ~f:(fun acc idx -> acc + won_by idx)))
     in
     List.fold cards ~init:(List.length cards) ~f:(fun acc card -> acc + won_by card.idx)
-    |> sprintf !"%{sexp:(Int.t)}"
+    |> sprintf !"%{sexp:(int)}"
   in
   In_channel.with_file filename ~f
 ;;

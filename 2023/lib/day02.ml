@@ -41,23 +41,17 @@ end
 
 module Parse = struct
   open Angstrom
+  open Util.Parse
 
-  let many_space = many @@ char ' '
-  let game_number = string "Game " *> take_while Char.is_digit *> string ": "
-  let number = take_while Char.is_digit >>| fun digits -> Int.of_string digits
-  let red = number <* string " red" >>| fun i -> `Red i
-  let green = number <* string " green" >>| fun i -> `Green i
-  let blue = number <* string " blue" >>| fun i -> `Blue i
-  let color = many_space *> choice [ red; green; blue ] <* many_space
+  let game_number = string "Game " *> integer *> string ": "
+  let red = integer <* string " red" >>| fun i -> `Red i
+  let green = integer <* string " green" >>| fun i -> `Green i
+  let blue = integer <* string " blue" >>| fun i -> `Blue i
+  let color = spaces *> choice [ red; green; blue ] <* spaces
   let outcome = sep_by (char ',') color >>| fun xs -> Outcome.of_list xs
   let outcomes = sep_by (char ';') outcome
-  let game = game_number *> outcomes
-
-  let game_of_string line =
-    match parse_string ~consume:Consume.All game line with
-    | Ok game -> game
-    | _ -> failwith "Invalid input"
-  ;;
+  let puzzle = game_number *> outcomes
+  let parse = parse_general puzzle
 end
 
 let possible_given bag outcomes =
@@ -81,7 +75,7 @@ let solve part filename =
   let f ic =
     let puzzle =
       Util.read_lines ic
-      |> Sequence.map ~f:Parse.game_of_string
+      |> Sequence.map ~f:Parse.parse
       |> filter_map
       |> Sequence.sum (module Int) ~f:Util.id
     in

@@ -3,9 +3,8 @@ open Stdio
 
 module Parse = struct
   open Angstrom
+  open Util.Parse
 
-  let spaces = many (char ' ')
-  let endl = char '\n'
   let double_endl = endl *> endl
   let lr = choice [ (char 'R' >>| fun _ -> `Right); (char 'L' >>| fun _ -> `Left) ]
   let directions = many1 lr
@@ -31,14 +30,8 @@ module Parse = struct
     return (directions, nodes)
   ;;
 
-  let parse_general parser input =
-    match parse_string parser input ~consume:Consume.All with
-    | Ok parsed -> parsed
-    | Error thing -> failwith (sprintf !"Invalid input!%s" thing)
-  ;;
+  let parse = parse_general puzzle
 end
-
-let parse_puzzle = Parse.(parse_general puzzle)
 
 module Stringtbl = Hashtbl.Make (String)
 
@@ -100,7 +93,7 @@ module Graph = struct
 end
 
 let part1 filename =
-  let directions, nodes = In_channel.read_all filename |> parse_puzzle in
+  let directions, nodes = In_channel.read_all filename |> Parse.parse in
   let graph = Graph.of_tuple_nodes nodes in
   Sequence.cycle_list_exn directions
   |> Sequence.fold_until
@@ -122,7 +115,7 @@ let argmin arr ~compare =
 ;;
 
 let part2 filename =
-  let directions, nodes = In_channel.read_all filename |> parse_puzzle in
+  let directions, nodes = In_channel.read_all filename |> Parse.parse in
   let graph = Graph.of_tuple_nodes nodes in
   let starts = Graph.starts graph in
   let z_vals, z_seqs =

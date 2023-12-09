@@ -30,7 +30,3 @@ let points_of_interest t =
   List.fold ~init:[] t.ranges ~f:(fun acc x -> x.src_pos :: (x.src_pos + x.len) :: acc)
   |> List.dedup_and_sort ~compare:Int.compare
 ;;
-
-let points_of_interest_transformed t =
-  points_of_interest t |> List.map ~f:(fun x -> find t x)
-;;

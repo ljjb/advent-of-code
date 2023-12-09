@@ -10,3 +10,21 @@ let read_lines ic =
     | None -> None
   in
   Sequence.unfold ~init:ic ~f
+;;
+
+module Parse = struct
+  open Angstrom
+
+  let space = char ' '
+  let spaces, spaces1 = many space, many1 space
+  let endl = char '\n'
+  let lenient_endl = spaces *> endl <* spaces
+  let integer = take_while1 Char.is_digit >>| Int.of_string
+  let integers = sep_by1 spaces1 integer
+
+  let parse_general parser input =
+    match parse_string ~consume:Consume.All parser input with
+    | Ok parsed -> parsed
+    | _ -> failwith "invalid input!"
+  ;;
+end

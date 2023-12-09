@@ -22,11 +22,10 @@ end
 
 module Parse = struct
   open Angstrom
+  open Util.Parse
 
-  let many_space = many @@ char ' '
-  let integer = take_while1 Char.is_digit >>| Int.of_string
-  let numbers = many_space *> sep_by many_space integer <* many_space
-  let card_label = string_ci "Card" *> many_space *> integer <* char ':'
+  let numbers = spaces *> integers <* spaces
+  let card_label = string_ci "Card" *> spaces *> integer <* char ':'
 
   let card =
     let* idx = card_label in
@@ -36,11 +35,7 @@ module Parse = struct
     return Card.{ idx; winners; received }
   ;;
 
-  let card_of_string line =
-    match parse_string ~consume:Consume.All card line with
-    | Ok game -> game
-    | _ -> failwith "Invalid input"
-  ;;
+  let parse_card = parse_general card
 end
 
 let points_of_num_matching x = if x <= 0 then 0 else Int.pow 2 (x - 1)
@@ -48,7 +43,7 @@ let points_of_num_matching x = if x <= 0 then 0 else Int.pow 2 (x - 1)
 let part1 filename =
   let f ic =
     Util.read_lines ic
-    |> Sequence.map ~f:Parse.card_of_string
+    |> Sequence.map ~f:Parse.parse_card
     |> Sequence.map ~f:Card.num_matching
     |> Sequence.map ~f:points_of_num_matching
     |> Sequence.sum (module Int) ~f:Util.id
@@ -61,9 +56,7 @@ let part2 filename =
   let f ic =
     let card_wins = Hashtbl.create (module Int) in
     let deep_card_wins = Hashtbl.create (module Int) in
-    let cards =
-      Util.read_lines ic |> Sequence.to_list |> List.map ~f:Parse.card_of_string
-    in
+    let cards = Util.read_lines ic |> Sequence.to_list |> List.map ~f:Parse.parse_card in
     cards
     |> List.iter ~f:(fun card ->
       Hashtbl.update card_wins card.idx ~f:(function

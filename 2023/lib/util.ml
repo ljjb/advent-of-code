@@ -17,9 +17,9 @@ module Parse = struct
 
   let space = char ' '
   let spaces, spaces1 = many space, many1 space
-  let endl = char '\n'
+  let endl = end_of_line
   let lenient_endl = spaces *> endl <* spaces
-  let integer = take_while1 Char.is_digit >>| Int.of_string
+  let integer = take_while1 (fun c -> Char.(is_digit c || equal c '-')) >>| Int.of_string
   let integers = sep_by1 spaces1 integer
 
   let parse_general parser input =

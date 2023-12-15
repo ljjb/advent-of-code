@@ -2,6 +2,7 @@ open Core
 open Stdio
 
 let id x = x
+let ( %> ) f g x = g (f x)
 
 let read_lines ic =
   let f ic =

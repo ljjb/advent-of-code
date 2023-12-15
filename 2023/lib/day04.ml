@@ -1,5 +1,6 @@
 open Core
 open Stdio
+open Util
 
 module Card = struct
   type t =
@@ -43,9 +44,7 @@ let points_of_num_matching x = if x <= 0 then 0 else Int.pow 2 (x - 1)
 let part1 filename =
   let f ic =
     Util.read_lines ic
-    |> Sequence.map ~f:Parse.parse_card
-    |> Sequence.map ~f:Card.num_matching
-    |> Sequence.map ~f:points_of_num_matching
+    |> Sequence.map ~f:(Parse.parse_card %> Card.num_matching %> points_of_num_matching)
     |> Sequence.sum (module Int) ~f:Util.id
     |> sprintf !"%{sexp:(Int.t)}"
   in

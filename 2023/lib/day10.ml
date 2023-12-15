@@ -1,7 +1,6 @@
 open Core
 open Stdio
-
-let ( %> ) = Util.( %> )
+open Util
 
 module Coord = struct
   type t = int * int [@@deriving sexp, compare, hash]
@@ -39,6 +38,14 @@ module Tile = struct
 
   let is_ground = equal Ground
   let is_pipe = is_ground %> not
+
+  (* The trick is that you can choose F and 7 too:
+     Run across ...L-J... and that cancels out,
+     but run across ...L-7... or ...F-J... and it doesn't! *)
+  let is_horz_separator = function
+    | Vert_pipe | L_bend | J_bend -> true
+    | _ -> false
+  ;;
 
   let connects_to t dir =
     let open Direction in
@@ -116,8 +123,6 @@ module Parse = struct
   let row_of_string s = String.to_array s |> Array.map ~f:either_of_char
 end
 
-let manhattan (ai, aj) (bi, bj) = Int.(abs (ai - bi) + abs (aj - bj))
-
 let find_loop grid init =
   let visited = Hash_set.create (module Coord) in
   let f ((i, j) as coords) =
@@ -167,9 +172,25 @@ let part1 filename =
 ;;
 
 let part2 filename =
-  let tile_grid, (_, _) = read_puzzle filename in
-  (* let loop_seq = loop_clockwise tile_grid (si, sj) in *)
+  let tile_grid, (si, sj) = read_puzzle filename in
+  let loop_seq = find_loop tile_grid (si, sj) in
   let nrows, ncols = Array.(length tile_grid, length tile_grid.(0)) in
   let loop_grid = Array.make_matrix false ~dimx:nrows ~dimy:ncols in
-  Array.length loop_grid |> sprintf !"%{sexp:((int))}\n"
+  Sequence.iter loop_seq ~f:(fun (i, j) -> loop_grid.(i).(j) <- true);
+  let in_grid = Array.make_matrix true ~dimx:nrows ~dimy:ncols in
+  let left_to_right, right_to_left, top_to_bottom =
+    Sequence.(
+      range 0 ncols, range (ncols - 1) 0 ~stride:(-1) ~stop:`inclusive, range 0 nrows)
+  in
+  Sequence.iter top_to_bottom ~f:(fun i ->
+    List.iter [ left_to_right; right_to_left ] ~f:(fun through_row_iter ->
+      let cur_in = ref false in
+      Sequence.iter through_row_iter ~f:(fun j ->
+        if Tile.is_horz_separator tile_grid.(i).(j) && loop_grid.(i).(j)
+        then cur_in := not !cur_in;
+        in_grid.(i).(j) <- in_grid.(i).(j) && !cur_in && (not @@ loop_grid.(i).(j)))));
+  (* print_grid in_grid; *)
+  Array.map in_grid ~f:(fun row -> Array.count row ~f:id)
+  |> Array.sum (module Int) ~f:id
+  |> sprintf !"%{sexp:((int))}\n"
 ;;

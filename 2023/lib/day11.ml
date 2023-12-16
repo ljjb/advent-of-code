@@ -50,27 +50,25 @@ let combinations seq =
   |> Sequence.concat
 ;;
 
-let manhattan (ai, aj) (bi, bj) = Int.(abs (ai - bi) + abs (aj - bj))
-
-let expanded_manhattan ((ai, aj) as a) ((bi, bj) as b) ~empty_rows ~empty_cols ~added =
+let expanded_manhattan (ai, aj) (bi, bj) ~empty_rows ~empty_cols ~added =
   let ai, bi = if ai > bi then bi, ai else ai, bi in
   let aj, bj = if aj > bj then bj, aj else aj, bj in
-  let is_, js =
-    Sequence.(
-      ( range ai bi ~start:`exclusive ~stop:`exclusive
-      , range aj bj ~start:`exclusive ~stop:`exclusive ))
+  let row_delta =
+    Set.to_sequence empty_rows ~greater_or_equal_to:ai ~less_or_equal_to:bi
+    |> Sequence.length
   in
-  let row_delta = Sequence.count is_ ~f:(fun i -> Set.mem empty_rows i) in
-  let col_delta = Sequence.count js ~f:(fun j -> Set.mem empty_cols j) in
-  manhattan a b + ((row_delta + col_delta) * added)
+  let col_delta =
+    Set.to_sequence empty_cols ~greater_or_equal_to:aj ~less_or_equal_to:bj
+    |> Sequence.length
+  in
+  bi - ai + (bj - aj) + ((row_delta + col_delta) * added)
 ;;
 
 let solve ~expansion filename =
   let added = expansion - 1 in
   let grid = In_channel.read_lines filename |> to_unexpanded in
   let empty_rows, empty_cols = get_vastness grid in
-  let galaxies = get_galaxies grid in
-  let all_pairs = combinations galaxies in
+  let all_pairs = get_galaxies grid |> combinations in
   Sequence.sum
     (module Int)
     all_pairs

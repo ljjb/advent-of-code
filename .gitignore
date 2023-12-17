@@ -2,3 +2,4 @@
 **/*.opam
 **/input/*.txt
 **/ig_*.ml
+_opam/**/*

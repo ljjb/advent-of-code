@@ -4,8 +4,7 @@ open Util
 
 module type Puzzle_node = sig
   include module type of Base_node
-
-  type t = Base_node.t
+  module Heap = Base_node.Heap
 
   val all_possible_of_coords : Coord.t -> t list
   val successors : t -> nrows:int -> ncols:int -> t list

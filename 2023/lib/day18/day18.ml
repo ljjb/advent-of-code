@@ -83,14 +83,14 @@ module Corner = struct
     1 - i, 1 - j
   ;;
 
-  let transform ~wiseness ~dir_in ~dir_out (i, j) =
-    let transform =
+  let transform ~wiseness ({ dir_in; dir_out; coords = i, j } as t) =
+    let transform_rel =
       match wiseness with
       | `Clock -> transform_clock_rel
       | `Counter -> transform_counter_rel
     in
-    let di, dj = transform ~dir_in ~dir_out in
-    i + di, j + dj
+    let di, dj = transform_rel ~dir_in ~dir_out in
+    { t with coords = i + di, j + dj }
   ;;
 end
 
@@ -132,17 +132,7 @@ let orientation perim =
 
 let area perim =
   let wiseness = orientation perim in
-  let perim =
-    List.map perim ~f:(fun corner ->
-      let coords' =
-        Corner.transform
-          ~wiseness
-          ~dir_in:corner.Corner.dir_in
-          ~dir_out:corner.dir_out
-          corner.coords
-      in
-      { corner with coords = coords' })
-  in
+  let perim = List.map perim ~f:(Corner.transform ~wiseness) in
   let double_area =
     Iteration.windows perim 2
     |> Sequence.fold ~init:0 ~f:(fun acc window ->
@@ -153,10 +143,11 @@ let area perim =
 ;;
 
 let solve ~parse_row filename =
-  let perim =
-    In_channel.read_lines filename |> List.map ~f:parse_row |> construct_perim
-  in
-  area perim |> sprintf !"%{sexp:(int)}"
+  In_channel.read_lines filename
+  |> List.map ~f:parse_row
+  |> construct_perim
+  |> area
+  |> sprintf !"%{sexp:(int)}"
 ;;
 
 let part1 = solve ~parse_row:Parse.part1

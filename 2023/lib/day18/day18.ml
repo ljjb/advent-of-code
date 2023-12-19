@@ -1,5 +1,6 @@
 open Core
 open Stdio
+module Iteration = Util.Iteration
 
 module Coords = struct
   type t = int * int [@@deriving sexp, compare, equal, hash]
@@ -97,32 +98,9 @@ let construct_perim rows =
     hd :: tl
 ;;
 
-let windows l size =
-  let n = List.length l in
-  if n < size then failwith "window larger than list!";
-  let rec aux seq i window =
-    let open Sequence.Generator in
-    if i >= n
-    then return ()
-    else (
-      let ele, seq = Sequence.next seq |> Option.value_exn in
-      if Fdeque.length window < size
-      then aux seq i (Fdeque.enqueue_back window ele)
-      else
-        yield window
-        >>= fun () ->
-        let window = Fdeque.drop_front_exn window in
-        let window = Fdeque.enqueue_back window ele in
-        aux seq (i + 1) window)
-  in
-  let seq = Sequence.cycle_list_exn l in
-  let window = Fdeque.empty in
-  Sequence.Generator.run @@ aux seq 0 window |> Sequence.map ~f:Fdeque.to_array
-;;
-
 let orientation perim =
   let least_window =
-    windows perim 3
+    Iteration.windows perim 3
     |> Sequence.max_elt ~compare:(fun a b ->
       let a = a.(1).Corner.coords in
       let b = b.(1).Corner.coords in
@@ -139,7 +117,7 @@ let orientation perim =
 
 let area perim =
   let wiseness = orientation perim in
-  let perim' =
+  let perim =
     List.map perim ~f:(fun corner ->
       let coords' =
         Corner.transform
@@ -151,7 +129,7 @@ let area perim =
       { corner with coords = coords' })
   in
   let double_area =
-    windows perim' 2
+    Iteration.windows perim 2
     |> Sequence.fold ~init:0 ~f:(fun acc window ->
       let (y, x), (y_next, x_next) = window.(0).Corner.coords, window.(1).Corner.coords in
       acc + ((x - x_next) * (y + y_next)))

@@ -145,7 +145,7 @@ let get_top_left_corner _ = [ Beam_head.{ pos = 0, 0; dir = Right } ]
 
 let get_all_edges grid =
   let nrows, ncols = Array.(length grid, length grid.(0)) in
-  let horz, vert = Sequence.(range 0 ncols, range 0 ncols) in
+  let horz, vert = Sequence.(range 0 ncols, range 0 nrows) in
   let top = Sequence.map horz ~f:(fun j -> Beam_head.{ pos = 0, j; dir = Down }) in
   let bot = Sequence.map horz ~f:(fun j -> Beam_head.{ pos = nrows - 1, j; dir = Up }) in
   let left = Sequence.map vert ~f:(fun i -> Beam_head.{ pos = i, 0; dir = Right }) in

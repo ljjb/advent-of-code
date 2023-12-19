@@ -49,7 +49,22 @@ module Corner = struct
      appropriate diagonal in a new coordinate system where the coordinates describe
      the corners of the tiles rather than the centers. To know which diagonal, we
      rely on knowing whether we're going clockwise or anticlockwise.
-  *)
+
+     For instance, say we're going right and turn down. If we're going clockwise
+     then we know the actual boundary of the shape is on the northeast corner, which
+     in the original (i, j) center-coordinate system is transformed to (i, j + 1)
+     in the new corner-coordinate system, illustrated below at
+     center-(0, 0) ~ corner-(0,1):
+
+     |  (0,0)     (0,1)
+     |      F-----7
+     |      |    /|
+     |    >-|--7  |
+     |      |  |  |
+     |      L-----J
+     |  (1,0)  V  (1,1)
+
+     If we were going anticlockwise, it'd be the opposite corner: (1, 0) *)
   let transform_clock_rel ~dir_in ~dir_out =
     match dir_in, dir_out with
     | Direction.(Up, Right) -> 0, 0

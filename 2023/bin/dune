@@ -71,6 +71,12 @@
  (libraries advent2023 core stdio))
 
 (executable
+ (public_name day13)
+ (name day13)
+ (modules day13)
+ (libraries advent2023 core stdio))
+
+(executable
  (public_name day15)
  (name day15)
  (modules day15)

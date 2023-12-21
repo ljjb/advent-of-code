@@ -86,12 +86,9 @@ let part2 filename =
       boxes.(lens.box)
         <- replace_or_prepend boxes.(lens.box) lens ~equal:Lens.have_same_label);
   Array.foldi boxes ~init:0 ~f:(fun box_i acc contents ->
-    let delta =
-      contents
-      |> List.rev
-      |> List.foldi ~init:0 ~f:(fun lens_i acc Lens.{ focal_length; _ } ->
-        acc + ((box_i + 1) * (lens_i + 1) * focal_length))
-    in
-    acc + delta)
+    List.rev contents
+    |> List.foldi ~init:0 ~f:(fun lens_i acc Lens.{ focal_length; _ } ->
+      acc + ((box_i + 1) * (lens_i + 1) * focal_length))
+    |> ( + ) acc)
   |> sprintf !"%{sexp:(int)}"
 ;;

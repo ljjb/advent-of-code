@@ -1,7 +1,7 @@
-open Advent2023.Day13
+open Advent2023.Day12
 
 let () =
-  let filename = "input/day13.txt" in
+  let filename = "input/day12.txt" in
   let sol1 = part1 filename in
   Format.printf "%s\n" sol1;
   Out_channel.(flush stdout);

@@ -3,6 +3,8 @@ open Stdio
 
 let id x = x
 let ( %> ) f g x = g (f x)
+let ( &&> ) f g x = f x && g x
+let ( ||> ) f g x = f x || g x
 
 let read_lines ic =
   let f ic =

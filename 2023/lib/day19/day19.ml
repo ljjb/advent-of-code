@@ -35,3 +35,24 @@ let part1 filename =
   |> List.sum (module Int) ~f:Util.id
   |> sprintf !"%{sexp:(int)}"
 ;;
+
+let quantum_resolve workflows (lo, hi) =
+  let q = Queue.create () in
+  let init = "in", Quantum_part.init (lo, hi) in
+  Queue.enqueue q init;
+  let rec loop tally =
+    match Queue.dequeue q with
+    | None -> tally
+    | Some (workflow_name, quantum_part) ->
+      let workflow = Map.find_exn workflows workflow_name in
+      let delta, forwarded_parts = Quantum_part.split_workflow quantum_part workflow in
+      Map.iteri forwarded_parts ~f:(fun ~key ~data -> Queue.enqueue q (key, data));
+      loop (tally + delta)
+  in
+  loop 0
+;;
+
+let part2 filename =
+  let workflows, _ = read_puzzle filename in
+  quantum_resolve workflows (1, 4000) |> sprintf !"%{sexp:(int)}"
+;;

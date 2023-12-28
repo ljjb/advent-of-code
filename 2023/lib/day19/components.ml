@@ -212,17 +212,20 @@ module Quantum_part = struct
       ~f:(fun (t, tally, forwarded_acc) rule ->
         let kept, delta, forwarded = split_rule t rule in
         let forwarded_acc =
-          List.fold forwarded ~init:forwarded_acc ~f:(fun aways (dst, forwarded_part) ->
-            Map.update aways dst ~f:(function
-              | None -> forwarded_part
-              | Some preexisting ->
-                merge_attr preexisting forwarded_part ~attr:rule.Rule.attribute))
+          List.fold
+            forwarded
+            ~init:forwarded_acc
+            ~f:(fun forwarded_acc (dst, forwarded_part) ->
+              Map.update forwarded_acc dst ~f:(function
+                | None -> forwarded_part
+                | Some preexisting ->
+                  merge_attr preexisting forwarded_part ~attr:rule.Rule.attribute))
         in
         match kept with
         | None -> Continue_or_stop.Stop (tally + delta, forwarded_acc)
         | Some kept -> Continue_or_stop.Continue (kept, tally + delta, forwarded_acc))
-      ~finish:(fun (t, acc, forwarded_acc) ->
-        let tally, forwarded = split_default t workflow.default in
+      ~finish:(fun (t, tally, forwarded_acc) ->
+        let delta, forwarded = split_default t workflow.default in
         let forwarded_acc =
           List.fold
             forwarded
@@ -232,6 +235,6 @@ module Quantum_part = struct
                 | None -> forwarded_part
                 | Some preexisting -> merge_all preexisting forwarded_part))
         in
-        acc + tally, forwarded_acc)
+        tally + delta, forwarded_acc)
   ;;
 end
